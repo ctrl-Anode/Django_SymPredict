@@ -1,0 +1,250 @@
+py manage.py runserver
+
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+
+# Load datasets with exception handling
+try:
+    mental_data = pd.read_csv('static/models/mentalDisorder.csv')
+    obesity_data = pd.read_csv('static/models/obesity_data.csv')
+    pcos_data = pd.read_csv('static/models/CLEAN- PCOS SURVEY SPREADSHEET')
+except FileNotFoundError as e:
+    print(f"Error loading file: {e}")
+
+# Preview the data
+print(mental_data.info())
+print(obesity_data.info())
+print(pcos_data.info())
+
+# Handle missing values
+mental_data = mental_data.dropna()
+obesity_data = obesity_data.fillna(method='ffill')
+pcos_data = pcos_data.dropna()
+
+# Encode categorical variables
+encoder = LabelEncoder()
+if 'column_name' in mental_data.columns:
+    mental_data['encoded_column'] = encoder.fit_transform(mental_data['column_name'])
+else:
+    print("Column 'column_name' not found in mental_data")
+
+# Split into features and target
+X_mental = mental_data.drop(['target_column'], axis=1)
+y_mental = mental_data['target_column']
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(X_mental, y_mental, test_size=0.2, random_state=42)
+
+from sklearn.ensemble import RandomForestClassifier
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+from sklearn.metrics import accuracy_score
+
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+import joblib
+
+joblib.dump(model, 'static/models/mental_disorder_prediction.pkl')
+joblib.dump(encoder, 'static/encoders/mental_disorder_encoder.pkl')
+
+//'Age','Weight','Height','Bloodgroup','Monthsperiod','gainweight','hairgrowth','skindarkening','hairloss','pimples','eatfast','regularbasis','diagnosedwithPCOS','moodswings','periodsregular','periodlast'
+working pcos 
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+# Load datasets with exception handling
+try:
+    mental_data = pd.read_csv('static/pcos.csv')
+except FileNotFoundError as e:
+    print(f"Error loading file: {e}")
+    exit()
+
+# Preview the data
+print(mental_data.head())
+print(mental_data.info())
+
+# Handle missing values
+mental_data = mental_data.dropna()
+if mental_data.empty:
+    print("Mental disorder dataset is empty after dropping NaN values.")
+    exit()
+
+# Define feature columns and target column
+feature_columns = [
+    'Age','Weight','Height','Bloodgroup','Monthsperiod','gainweight','hairgrowth','skindarkening','hairloss','pimples','eatfast','regularbasis','diagnosedwithPCOS','moodswings','periodsregular','periodlast'
+
+]
+target_column = 'diagnosedwithPCOS'
+
+# Check if columns exist
+missing_columns = [col for col in feature_columns + [target_column] if col not in mental_data.columns]
+if missing_columns:
+    print(f"Missing columns in dataset: {missing_columns}")
+    exit()
+
+# Encode categorical variables
+encoder = LabelEncoder()
+for col in feature_columns:
+    mental_data[col] = encoder.fit_transform(mental_data[col])
+
+mental_data[target_column] = encoder.fit_transform(mental_data[target_column])
+
+# Split into features and target
+X_mental = mental_data[feature_columns]
+y_mental = mental_data[target_column]
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_mental, y_mental, test_size=0.2, random_state=42)
+
+# Train a Random Forest model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Save the model and encoder
+joblib.dump(model, 'static/models/pcos.pkl')
+joblib.dump(encoder, 'static/encoders/pcos_encoder.pkl')
+
+# Save the accuracy score
+with open('static/models/mental_disorder_metrics.txt', 'w') as f:
+    f.write(f"Accuracy: {accuracy}\n")
+
+/////////////////////////////mental mental_disorder
+
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import joblib
+
+# Load datasets with exception handling
+try:
+    mental_data = pd.read_csv('static/mentalDisorder.csv')
+except FileNotFoundError as e:
+    print(f"Error loading file: {e}")
+    exit()
+
+# Preview the data
+print(mental_data.head())
+print(mental_data.info())
+
+# Handle missing values
+mental_data = mental_data.dropna()
+if mental_data.empty:
+    print("Mental disorder dataset is empty after dropping NaN values.")
+    exit()
+
+# Define feature columns and target column
+feature_columns = [
+    'Sadness', 'Euphoric', 'Exhausted', 'Sleep dissorder', 'Mood Swing',
+    'Suicidal thoughts', 'Anorxia', 'Authority Respect', 'Try-Explanation',
+    'Aggressive Response', 'Ignore & Move-On', 'Nervous Break-down', 
+    'Admit Mistakes', 'Overthinking', 'Sexual Activity', 'Concentration', 
+    'Optimisim'
+]
+target_column = 'Expert Diagnose'
+
+# Check if columns exist
+missing_columns = [col for col in feature_columns + [target_column] if col not in mental_data.columns]
+if missing_columns:
+    print(f"Missing columns in dataset: {missing_columns}")
+    exit()
+
+# Encode categorical variables
+encoder = LabelEncoder()
+for col in feature_columns:
+    mental_data[col] = encoder.fit_transform(mental_data[col])
+
+mental_data[target_column] = encoder.fit_transform(mental_data[target_column])
+
+# Split into features and target
+X_mental = mental_data[feature_columns]
+y_mental = mental_data[target_column]
+
+# Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X_mental, y_mental, test_size=0.2, random_state=42)
+
+# Train a Random Forest model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Accuracy:", accuracy)
+
+# Save the model and encoder
+joblib.dump(model, 'static/models/mental_disorder_prediction.pkl')
+joblib.dump(encoder, 'static/encoders/mental_disorder_encoder.pkl')
+
+# Save the accuracy score
+with open('static/models/mental_disorder_metrics.txt', 'w') as f:
+    f.write(f"Accuracy: {accuracy}\n")
+
+//
+
+## Setup
+
+* Change the directory to Project
+
+```
+cd <directory to this folder>
+```
+
+* Install Dependencies
+
+```
+pip install -r requirements.txt
+```
+
+* Intall libraries or packages: If not installed, follow this
+
+```
+pip install <module>
+```
+
+* Database setup – Apply migrations
+
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+* Run application: start development server
+
+```
+python manage.py runserver
+```
+
+* Run application: Start development server
+
+```
+Navigate to http://127.0.0.1:8000/ in your browser
+```
+
+## Dataset Used
+
+* Kaggle Obesity Data: [Obesity Prediction](https://www.kaggle.com/datasets/mrsimple07/obesity-prediction)
+* Kaggle Mental Disorder Data: [Mental Disorder Classification](https://www.kaggle.com/datasets/cid007/mental-disorder-classification)
+* Kaggle PCOS Dataset: [PCOS 2023 Dataset](https://www.kaggle.com/datasets/sahilkoli04/pcos2023)
+
+## References
+
+* [Django Documentation](https://docs.djangoproject.com/en/5.0/)
+* [Boostrap Examples](https://getbootstrap.com/docs/4.0/examples/)
+* [w3schools](https://www.w3schools.com/)
